@@ -90,6 +90,7 @@ class _TotalScreenState extends State<TotalScreen> {
   }
 
   void _calculateFinalGrade() {
+    FocusScope.of(context).unfocus();
     _finalGrade = 0;
     _convertedGrades = [];
     _gradesNeeded = [];
@@ -155,6 +156,7 @@ class _TotalScreenState extends State<TotalScreen> {
               children: [
                 SizedBox(height: size.height * 0.05),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text(
                       "Nota Acumulada:",

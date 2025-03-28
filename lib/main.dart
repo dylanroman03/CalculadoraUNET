@@ -1,4 +1,4 @@
-import 'package:calculadora_unet/UI/screens/total_screen/total_screen.dart';
+import 'package:calculadora_unet/UI/screens/main_screen/main_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-      home: const TotalScreen(),
+      home: const MainScreen(),
     );
   }
 }
