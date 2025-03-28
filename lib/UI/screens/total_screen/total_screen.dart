@@ -186,7 +186,7 @@ class _TotalScreenState extends State<TotalScreen> {
                           color: Colors.orange,
                         ),
                       ),
-                    )
+                    ),
                   ],
                 ),
               ],
@@ -242,35 +242,45 @@ class _TotalScreenState extends State<TotalScreen> {
                 ),
                 SizedBox(height: size.height * 0.02),
                 if (_gradesNeeded.isNotEmpty)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  Row(
                     children: [
-                      Row(
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            "Cuánto falta para cada nota:",
-                            style: TextStyle(
-                              fontSize: size.width * 0.04,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          Row(
+                            children: [
+                              Text(
+                                "¿Cuánto falta?",
+                                style: TextStyle(
+                                  fontSize: size.width * 0.04,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          ..._gradesNeeded.asMap().entries.map(
+                            (entry) {
+                              final threshold = [2, 3, 4, 5, 6, 7, 8, 9]
+                                  .where(
+                                      (threshold) => threshold > _finalGrade!)
+                                  .toList()[entry.key];
+                              final value = entry.value.toInt();
+                              return Text(
+                                "Para $threshold necesitas: ${value == 0 ? "Fuera de la escala" : value}",
+                                style: TextStyle(
+                                  fontSize: size.width * 0.045,
+                                  color: value == 0 ? Colors.red : Colors.black,
+                                ),
+                              );
+                            },
                           ),
                         ],
                       ),
-                      ..._gradesNeeded.asMap().entries.map(
-                        (entry) {
-                          final threshold = [2, 3, 4, 5, 6, 7, 8, 9]
-                              .where((threshold) => threshold > _finalGrade!)
-                              .toList()[entry.key];
-                          final value = entry.value.toInt();
-                          return Text(
-                            "Para $threshold necesitas: ${value == 0 ? "Fuera de la escala" : value}",
-                            style: TextStyle(
-                              fontSize: size.width * 0.045,
-                              color: value == 0 ? Colors.red : Colors.black,
-                            ),
-                          );
-                        },
-                      ),
+                      SizedBox(width: size.width * 0.07),
+                      Image.asset(
+                        "assets/image-removebg-preview.png",
+                        width: size.width * 0.45,
+                      )
                     ],
                   ),
               ],
