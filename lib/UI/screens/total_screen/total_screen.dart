@@ -1,6 +1,7 @@
 import 'package:calculadora_unet/UI/app_theme.dart';
 import 'package:calculadora_unet/UI/components/rounded_button.dart';
 import 'package:calculadora_unet/UI/components/rounded_input_decoration.dart';
+import 'package:calculadora_unet/core/utilities.dart';
 import 'package:flutter/material.dart';
 
 class TotalScreen extends StatefulWidget {
@@ -14,6 +15,9 @@ class _TotalScreenState extends State<TotalScreen> {
   final List<Map<String, dynamic>> _inputRows = [];
   bool _isCalculateButtonEnabled = false;
   bool _isPercentageExceeded = false;
+  List<double> _convertedGrades = [];
+  List<double> _gradesNeeded = [];
+  double? _finalGrade;
 
   @override
   void initState() {
@@ -47,6 +51,7 @@ class _TotalScreenState extends State<TotalScreen> {
   void _validateInputs() {
     double totalPercentage = 0;
     bool allValid = true;
+    bool allPercentagesZero = true;
 
     for (var row in _inputRows) {
       final percentageText = row["percentage"]?.text ?? "";
@@ -65,6 +70,10 @@ class _TotalScreenState extends State<TotalScreen> {
         allValid = false;
       }
 
+      if (percentage > 0) {
+        allPercentagesZero = false;
+      }
+
       totalPercentage += isPercentageValid ? percentage : 0;
     }
 
@@ -76,8 +85,47 @@ class _TotalScreenState extends State<TotalScreen> {
     }
 
     setState(() {
-      _isCalculateButtonEnabled = allValid;
+      _isCalculateButtonEnabled = allValid && !allPercentagesZero;
     });
+  }
+
+  void _calculateFinalGrade() {
+    _finalGrade = 0;
+    _convertedGrades = [];
+    _gradesNeeded = [];
+
+    List<double> grades = _inputRows
+        .map((row) => double.tryParse(row["calification"]?.text ?? "0") ?? 0)
+        .toList();
+    List<double> weights = _inputRows
+        .map((row) => double.tryParse(row["percentage"]?.text ?? "0") ?? 0)
+        .toList();
+
+    final result = calcularNotaFinal(grades, weights);
+
+    setState(() {
+      _convertedGrades = result["convertedGrades"];
+      _finalGrade = result["finalGrade"];
+    });
+
+    bool allInputsFilled = _inputRows.length == 4 &&
+        _inputRows.every((row) =>
+            (double.tryParse(row["percentage"]?.text ?? "0") ?? 0) > 0);
+    bool percentagesSumTo100 = weights.reduce((a, b) => a + b) == 100;
+
+    if (_finalGrade != null && !allInputsFilled && !percentagesSumTo100) {
+      List<double> thresholds = [1.5, 2.5, 3.5, 4.5, 5.5, 6.7, 7.5, 8.5];
+      List<int> gradesNeeded = thresholds
+          .where((threshold) => threshold > _finalGrade!)
+          .map((threshold) {
+        return howLeftTo(
+            _finalGrade!, threshold, 100 - weights.reduce((a, b) => a + b));
+      }).toList();
+
+      setState(() {
+        _gradesNeeded = gradesNeeded.map((e) => e.toDouble()).toList();
+      });
+    }
   }
 
   @override
@@ -110,6 +158,21 @@ class _TotalScreenState extends State<TotalScreen> {
                 ),
               ),
               const SizedBox(height: 18),
+              if (_finalGrade != null) ...[
+                Row(
+                  children: [
+                    Text(
+                      "Nota Final: ${_finalGrade!.toStringAsFixed(2)}",
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+              ],
               _buildHeaderRow(),
               ..._inputRows
                   .asMap()
@@ -117,8 +180,8 @@ class _TotalScreenState extends State<TotalScreen> {
                   .map((entry) => _buildInputRow(entry.value, entry.key)),
               const SizedBox(height: 10),
               _buildActionButtons(),
-              const SizedBox(height: 40),
-              if (_isPercentageExceeded)
+              const SizedBox(height: 20),
+              if (_isPercentageExceeded) ...[
                 const Row(
                   children: [
                     Icon(
@@ -135,10 +198,44 @@ class _TotalScreenState extends State<TotalScreen> {
                     ),
                   ],
                 ),
-              const SizedBox(height: 10),
+                const SizedBox(height: 10),
+              ],
               _buildCalculateButton(size),
               const SizedBox(height: 10),
               _buildClearButton(size),
+              const SizedBox(height: 20),
+              if (_gradesNeeded.isNotEmpty)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Text(
+                          "Cuánto falta para cada nota:",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    ..._gradesNeeded.asMap().entries.map(
+                      (entry) {
+                        final threshold = [2, 3, 4, 5, 6, 7, 8, 9]
+                            .where((threshold) => threshold > _finalGrade!)
+                            .toList()[entry.key];
+                        final value = entry.value.toInt();
+                        return Text(
+                          "Para $threshold necesitas: ${value == 0 ? "Fuera de la escala" : value}",
+                          style: TextStyle(
+                            fontSize: 17,
+                            color: value == 0 ? Colors.red : Colors.black,
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
             ],
           ),
         ),
@@ -150,7 +247,7 @@ class _TotalScreenState extends State<TotalScreen> {
     return const Row(
       children: [
         Expanded(
-          flex: 1,
+          flex: 2,
           child: Text(
             "Porcentaje",
             style: TextStyle(fontWeight: FontWeight.bold),
@@ -158,10 +255,19 @@ class _TotalScreenState extends State<TotalScreen> {
         ),
         SizedBox(width: 8),
         Expanded(
-          flex: 1,
+          flex: 2,
           child: Text(
             "Calificación",
             style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+        SizedBox(width: 8),
+        Expanded(
+          flex: 1,
+          child: Text(
+            "1-9",
+            style: TextStyle(fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
           ),
         ),
       ],
@@ -174,7 +280,7 @@ class _TotalScreenState extends State<TotalScreen> {
       child: Row(
         children: [
           Expanded(
-            flex: 1,
+            flex: 2,
             child: TextFormField(
               controller: controllers["percentage"],
               decoration: RoundedInputDecoration(
@@ -188,7 +294,7 @@ class _TotalScreenState extends State<TotalScreen> {
           ),
           const SizedBox(width: 8),
           Expanded(
-            flex: 1,
+            flex: 2,
             child: TextFormField(
               controller: controllers["calification"],
               decoration: RoundedInputDecoration(
@@ -198,6 +304,20 @@ class _TotalScreenState extends State<TotalScreen> {
               ),
               keyboardType: TextInputType.number,
               onChanged: (_) => _validateInputs(),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            flex: 1,
+            child: Text(
+              _convertedGrades.length > index
+                  ? _convertedGrades[index].toStringAsFixed(1)
+                  : "---",
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
@@ -266,14 +386,18 @@ class _TotalScreenState extends State<TotalScreen> {
     return SizedBox(
       width: size.width * 0.9,
       child: RoundedButton(
-        onPressed: _isCalculateButtonEnabled ? () {} : null,
+        onPressed: _isCalculateButtonEnabled ? _calculateFinalGrade : null,
         backgroundColor:
             _isCalculateButtonEnabled ? AppTheme.nearlyBlue : Colors.grey,
         child: const Padding(
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: Text(
             "Calcular Nota Final",
-            style: TextStyle(fontSize: 16, color: Colors.white),
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ),
@@ -290,6 +414,9 @@ class _TotalScreenState extends State<TotalScreen> {
               row["percentage"]?.text = "0";
               row["calification"]?.text = "0";
             }
+            _convertedGrades = [];
+            _gradesNeeded = [];
+            _finalGrade = null;
             _validateInputs();
           });
         },
