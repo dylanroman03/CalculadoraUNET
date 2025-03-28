@@ -9,7 +9,7 @@ class RoundedInputDecoration extends InputDecoration {
   @override
   InputBorder? get enabledBorder => OutlineInputBorder(
         borderSide: BorderSide(
-          color: isError ? Colors.red : AppTheme.lightText,
+          color: isError ? AppTheme.nearlyRed : AppTheme.lightText,
         ),
         borderRadius: const BorderRadius.all(Radius.circular(10)),
       );
@@ -17,14 +17,14 @@ class RoundedInputDecoration extends InputDecoration {
   @override
   InputBorder? get focusedBorder => OutlineInputBorder(
         borderSide: BorderSide(
-          color: isError ? Colors.red : Colors.blue,
+          color: isError ? AppTheme.nearlyRed : AppTheme.nearlyBlue,
         ),
         borderRadius: const BorderRadius.all(Radius.circular(10)),
       );
 
   @override
   TextStyle? get labelStyle => TextStyle(
-        color: isError ? Colors.red : null,
+        color: isError ? AppTheme.nearlyRed : null,
       );
 
   @override

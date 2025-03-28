@@ -119,7 +119,10 @@ class _TotalScreenState extends State<TotalScreen> {
           .where((threshold) => threshold > _finalGrade!)
           .map((threshold) {
         return howLeftTo(
-            _finalGrade!, threshold, 100 - weights.reduce((a, b) => a + b));
+          _finalGrade!,
+          threshold,
+          100 - weights.reduce((a, b) => a + b),
+        );
       }).toList();
 
       setState(() {
@@ -142,103 +145,136 @@ class _TotalScreenState extends State<TotalScreen> {
     Size size = MediaQuery.of(context).size;
 
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 13),
-              const Text(
-                "Calcula Tu Nota Final",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.orange,
-                ),
-              ),
-              const SizedBox(height: 18),
-              if (_finalGrade != null) ...[
+      body: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            color: AppTheme.nearlyBlue,
+            padding: EdgeInsets.all(size.width * 0.04),
+            child: Column(
+              children: [
+                SizedBox(height: size.height * 0.05),
                 Row(
                   children: [
-                    Text(
-                      "Nota Final: ${_finalGrade!.toStringAsFixed(2)}",
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-              ],
-              _buildHeaderRow(),
-              ..._inputRows
-                  .asMap()
-                  .entries
-                  .map((entry) => _buildInputRow(entry.value, entry.key)),
-              const SizedBox(height: 10),
-              _buildActionButtons(),
-              const SizedBox(height: 20),
-              if (_isPercentageExceeded) ...[
-                const Row(
-                  children: [
-                    Icon(
-                      Icons.error_outline,
-                      color: Colors.red,
-                      weight: 10,
-                    ),
-                    SizedBox(width: 8),
-                    Text(
-                      "La suma de los porcentajes excede 100%",
+                    const Text(
+                      "Nota Acumulada:",
                       style: TextStyle(
-                        color: Colors.red,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-              ],
-              _buildCalculateButton(size),
-              const SizedBox(height: 10),
-              _buildClearButton(size),
-              const SizedBox(height: 20),
-              if (_gradesNeeded.isNotEmpty)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Row(
-                      children: [
-                        Text(
-                          "Cuánto falta para cada nota:",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                    SizedBox(width: size.width * 0.02),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(size.width * 0.02),
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: size.width * 0.025,
+                        vertical: size.height * 0.005,
+                      ),
+                      child: Text(
+                        _finalGrade != null
+                            ? _finalGrade!.toStringAsFixed(2)
+                            : "  -  ",
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.orange,
                         ),
-                      ],
+                      ),
+                    )
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: size.width * 0.04,
+              vertical: size.height * 0.02,
+            ),
+            child: Column(
+              children: [
+                _buildHeaderRow(),
+                ..._inputRows
+                    .asMap()
+                    .entries
+                    .map((entry) => _buildInputRow(entry.value, entry.key)),
+                SizedBox(height: size.height * 0.01),
+                _buildActionButtons(),
+                SizedBox(height: size.height * 0.04),
+                if (_isPercentageExceeded) ...[
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.error_outline,
+                        color: Colors.red,
+                        weight: 10,
+                      ),
+                      SizedBox(width: size.width * 0.02),
+                      const Text(
+                        "La suma de los porcentajes excede 100%",
+                        style: TextStyle(
+                          color: Colors.red,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: size.height * 0.01),
+                ],
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: _buildClearButton(size),
                     ),
-                    ..._gradesNeeded.asMap().entries.map(
-                      (entry) {
-                        final threshold = [2, 3, 4, 5, 6, 7, 8, 9]
-                            .where((threshold) => threshold > _finalGrade!)
-                            .toList()[entry.key];
-                        final value = entry.value.toInt();
-                        return Text(
-                          "Para $threshold necesitas: ${value == 0 ? "Fuera de la escala" : value}",
-                          style: TextStyle(
-                            fontSize: 17,
-                            color: value == 0 ? Colors.red : Colors.black,
-                          ),
-                        );
-                      },
+                    SizedBox(width: size.width * 0.02),
+                    Expanded(
+                      flex: 1,
+                      child: _buildCalculateButton(size),
                     ),
                   ],
                 ),
-            ],
-          ),
-        ),
+                SizedBox(height: size.height * 0.02),
+                if (_gradesNeeded.isNotEmpty)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            "Cuánto falta para cada nota:",
+                            style: TextStyle(
+                              fontSize: size.width * 0.04,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      ..._gradesNeeded.asMap().entries.map(
+                        (entry) {
+                          final threshold = [2, 3, 4, 5, 6, 7, 8, 9]
+                              .where((threshold) => threshold > _finalGrade!)
+                              .toList()[entry.key];
+                          final value = entry.value.toInt();
+                          return Text(
+                            "Para $threshold necesitas: ${value == 0 ? "Fuera de la escala" : value}",
+                            style: TextStyle(
+                              fontSize: size.width * 0.045,
+                              color: value == 0 ? Colors.red : Colors.black,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          )
+        ],
       ),
     );
   }
@@ -287,6 +323,10 @@ class _TotalScreenState extends State<TotalScreen> {
                 isError: controllers["percentageError"],
               ).copyWith(
                 labelText: "% Parcial ${index + 1}",
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 8,
+                  horizontal: 12,
+                ),
               ),
               keyboardType: TextInputType.number,
               onChanged: (_) => _validateInputs(),
@@ -301,6 +341,10 @@ class _TotalScreenState extends State<TotalScreen> {
                 isError: controllers["calificationError"],
               ).copyWith(
                 labelText: "Parcial ${index + 1}",
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 8,
+                  horizontal: 12,
+                ),
               ),
               keyboardType: TextInputType.number,
               onChanged: (_) => _validateInputs(),
@@ -327,23 +371,24 @@ class _TotalScreenState extends State<TotalScreen> {
 
   Widget _buildActionButtons() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        if (_inputRows.length < 4)
-          _buildOutlinedButton(
-            onPressed: _addInputRow,
-            color: Colors.green,
-            icon: Icons.add,
-            label: "Agregar",
-          ),
-        if (_inputRows.length > 1 && _inputRows.length < 4)
-          const SizedBox(width: 8),
+        const Expanded(
+          flex: 5,
+          child: SizedBox(),
+        ),
         if (_inputRows.length > 1)
           _buildOutlinedButton(
             onPressed: _removeInputRow,
             color: Colors.red,
             icon: Icons.remove,
             label: "Eliminar",
+          ),
+        if (_inputRows.length < 4)
+          _buildOutlinedButton(
+            onPressed: _addInputRow,
+            color: Colors.green,
+            icon: Icons.add,
+            label: "Agregar",
           ),
       ],
     );
@@ -355,28 +400,18 @@ class _TotalScreenState extends State<TotalScreen> {
     required IconData icon,
     required String label,
   }) {
-    return Expanded(
-      flex: 1,
+    return SizedBox(
+      width: 50,
       child: OutlinedButton(
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
           side: BorderSide(color: color),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
+          shape: const CircleBorder(),
+          padding: EdgeInsets.zero,
         ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: color, size: 20),
-              Text(
-                label,
-                style: TextStyle(fontSize: 16, color: color),
-              ),
-            ],
-          ),
+        child: Icon(
+          icon,
+          color: color,
         ),
       ),
     );
@@ -392,7 +427,7 @@ class _TotalScreenState extends State<TotalScreen> {
         child: const Padding(
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: Text(
-            "Calcular Nota Final",
+            "Calcular",
             style: TextStyle(
               fontSize: 16,
               color: Colors.white,
@@ -429,7 +464,7 @@ class _TotalScreenState extends State<TotalScreen> {
         child: const Padding(
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: Text(
-            "Limpiar Todo",
+            "Limpiar",
             style: TextStyle(fontSize: 16, color: Colors.black),
           ),
         ),
