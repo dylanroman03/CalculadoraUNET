@@ -3,6 +3,7 @@ import 'package:calculadora_unet/UI/components/rounded_button.dart';
 import 'package:calculadora_unet/UI/components/rounded_input_decoration.dart';
 import 'package:calculadora_unet/core/utilities.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class TotalScreen extends StatefulWidget {
   const TotalScreen({super.key});
@@ -39,13 +40,11 @@ class _TotalScreenState extends State<TotalScreen> {
     }
   }
 
-  void _removeInputRow() {
-    if (_inputRows.length > 1) {
-      setState(() {
-        _inputRows.removeLast();
-        _validateInputs();
-      });
-    }
+  void _removeSpecificInputRow(int index) {
+    setState(() {
+      _inputRows.removeAt(index);
+      _validateInputs();
+    });
   }
 
   void _validateInputs() {
@@ -115,7 +114,7 @@ class _TotalScreenState extends State<TotalScreen> {
     bool percentagesSumTo100 = weights.reduce((a, b) => a + b) == 100;
 
     if (_finalGrade != null && !allInputsFilled && !percentagesSumTo100) {
-      List<double> thresholds = [1.5, 2.5, 3.5, 4.5, 5.5, 6.7, 7.5, 8.5];
+      List<double> thresholds = [1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5];
       List<int> gradesNeeded = thresholds
           .where((threshold) => threshold > _finalGrade!)
           .map((threshold) {
@@ -244,42 +243,46 @@ class _TotalScreenState extends State<TotalScreen> {
                 if (_gradesNeeded.isNotEmpty)
                   Row(
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                "¿Cuánto falta?",
-                                style: TextStyle(
-                                  fontSize: size.width * 0.04,
-                                  fontWeight: FontWeight.bold,
+                      SizedBox(
+                        width: size.width * 0.5,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  "¿Cuánto falta?",
+                                  style: TextStyle(
+                                    fontSize: size.width * 0.04,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          ..._gradesNeeded.asMap().entries.map(
-                            (entry) {
-                              final threshold = [2, 3, 4, 5, 6, 7, 8, 9]
-                                  .where(
-                                      (threshold) => threshold > _finalGrade!)
-                                  .toList()[entry.key];
-                              final value = entry.value.toInt();
-                              return Text(
-                                "Para $threshold necesitas: ${value == 0 ? "Fuera de la escala" : value}",
-                                style: TextStyle(
-                                  fontSize: size.width * 0.045,
-                                  color: value == 0 ? Colors.red : Colors.black,
-                                ),
-                              );
-                            },
-                          ),
-                        ],
+                              ],
+                            ),
+                            ..._gradesNeeded.asMap().entries.map(
+                              (entry) {
+                                final threshold = [2, 3, 4, 5, 6, 7, 8, 9]
+                                    .where(
+                                        (threshold) => threshold > _finalGrade!)
+                                    .toList()[entry.key];
+                                final value = entry.value.toInt();
+                                return Text(
+                                  "Para $threshold ${value == 0 ? "Fuera de la escala" : "necesitas $value"}",
+                                  style: TextStyle(
+                                    fontSize: size.width * 0.045,
+                                    color:
+                                        value == 0 ? Colors.red : Colors.black,
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
                       ),
-                      SizedBox(width: size.width * 0.07),
+                      SizedBox(width: size.width * 0.04),
                       Image.asset(
                         "assets/image-removebg-preview.png",
-                        width: size.width * 0.45,
+                        width: size.width * 0.38,
                       )
                     ],
                   ),
@@ -318,6 +321,10 @@ class _TotalScreenState extends State<TotalScreen> {
             textAlign: TextAlign.center,
           ),
         ),
+        Expanded(
+          flex: 1,
+          child: SizedBox(),
+        ),
       ],
     );
   }
@@ -341,6 +348,22 @@ class _TotalScreenState extends State<TotalScreen> {
                 ),
               ),
               keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'^\d{1,4}$')),
+                TextInputFormatter.withFunction((oldValue, newValue) {
+                  final newText = newValue.text;
+                  if (int.tryParse(newText) != null &&
+                      int.parse(newText) > 100) {
+                    return oldValue.copyWith(
+                      text: oldValue.text,
+                      selection: TextSelection.collapsed(
+                        offset: oldValue.text.length,
+                      ),
+                    );
+                  }
+                  return newValue;
+                }),
+              ],
               onChanged: (_) => _validateInputs(),
             ),
           ),
@@ -359,6 +382,22 @@ class _TotalScreenState extends State<TotalScreen> {
                 ),
               ),
               keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'^\d{1,4}$')),
+                TextInputFormatter.withFunction((oldValue, newValue) {
+                  final newText = newValue.text;
+                  if (int.tryParse(newText) != null &&
+                      int.parse(newText) > 100) {
+                    return oldValue.copyWith(
+                      text: oldValue.text,
+                      selection: TextSelection.collapsed(
+                        offset: oldValue.text.length,
+                      ),
+                    );
+                  }
+                  return newValue;
+                }),
+              ],
               onChanged: (_) => _validateInputs(),
             ),
           ),
@@ -376,6 +415,14 @@ class _TotalScreenState extends State<TotalScreen> {
               ),
             ),
           ),
+          const SizedBox(width: 8),
+          IconButton(
+            icon: const Icon(
+              Icons.delete,
+              color: AppTheme.nearlyRed,
+            ),
+            onPressed: () => _removeSpecificInputRow(index),
+          ),
         ],
       ),
     );
@@ -384,48 +431,22 @@ class _TotalScreenState extends State<TotalScreen> {
   Widget _buildActionButtons() {
     return Row(
       children: [
-        const Expanded(
-          flex: 5,
-          child: SizedBox(),
-        ),
-        if (_inputRows.length > 1)
-          _buildOutlinedButton(
-            onPressed: _removeInputRow,
-            color: Colors.red,
-            icon: Icons.remove,
-            label: "Eliminar",
-          ),
         if (_inputRows.length < 4)
-          _buildOutlinedButton(
-            onPressed: _addInputRow,
-            color: Colors.green,
-            icon: Icons.add,
-            label: "Agregar",
+          Container(
+            margin: const EdgeInsets.only(left: 5),
+            child: GestureDetector(
+              onTap: _addInputRow,
+              child: const Text(
+                "+ Añadir Parcial",
+                style: TextStyle(
+                  color: Colors.green,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ),
       ],
-    );
-  }
-
-  Widget _buildOutlinedButton({
-    required VoidCallback onPressed,
-    required Color color,
-    required IconData icon,
-    required String label,
-  }) {
-    return SizedBox(
-      width: 50,
-      child: OutlinedButton(
-        onPressed: onPressed,
-        style: OutlinedButton.styleFrom(
-          side: BorderSide(color: color),
-          shape: const CircleBorder(),
-          padding: EdgeInsets.zero,
-        ),
-        child: Icon(
-          icon,
-          color: color,
-        ),
-      ),
     );
   }
 

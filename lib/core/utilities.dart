@@ -54,17 +54,31 @@ int convertGradeInverse(double valor) {
 
   int baseIndex = valor.floor() - 1;
   if (baseIndex < 0) return 1;
-  if (baseIndex >= columnas.length) return 0;
+  if (baseIndex >= columnas.length || valor > 9) return 0;
 
   int baseValue = columnas[baseIndex];
   double decimalPart = valor - valor.floor();
+  int decimal = (decimalPart * 10).round();
 
-  int convertedValue = baseValue + (decimalPart * 10).round();
+  if (baseIndex == 3 && decimal > 8 || baseIndex == 4 && decimal > 3) {
+    decimal = decimal + 1;
+  }
+
+  int convertedValue = 0;
+  if (decimal == 0) {
+    convertedValue = filas[baseIndex][0];
+  } else {
+    convertedValue = baseValue + decimal;
+  }
 
   if (convertedValue < filas[baseIndex][0]) {
     convertedValue = filas[baseIndex][0];
   } else if (convertedValue > filas[baseIndex][1]) {
     convertedValue = filas[baseIndex][1];
+  }
+
+  if (convertedValue == 0) {
+    return 1;
   }
 
   return convertedValue;

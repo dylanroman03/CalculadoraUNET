@@ -7,7 +7,7 @@ class AppTheme {
   static const Color background = Color(0xFFF2F3F8);
   static const Color nearlyDarkBlue = Color(0xFF2633C5);
 
-  static const Color nearlyBlue = Color(0xFF2b5590);
+  static const Color nearlyBlue = Color(0xFF123d86);
   static const Color nearlyRed = Color.fromRGBO(239, 83, 80, 1);
   static const Color nearlyBlack = Color(0xFF213333);
   static const Color grey = Color(0xFF3A5160);
