@@ -1,9 +1,12 @@
 import 'package:calculadora_unet/UI/app_theme.dart';
 import 'package:calculadora_unet/UI/components/rounded_button.dart';
-import 'package:calculadora_unet/UI/components/rounded_input_decoration.dart';
+import 'package:calculadora_unet/UI/components/rounded_button_outline.dart';
+import 'package:calculadora_unet/UI/screens/total_screen/widgets/grades_needed_display.dart';
+import 'package:calculadora_unet/UI/screens/total_screen/widgets/header_row.dart';
+import 'package:calculadora_unet/UI/screens/total_screen/widgets/input_row.dart';
+import 'package:calculadora_unet/UI/screens/total_screen/widgets/percentage_exceeded_warning.dart';
 import 'package:calculadora_unet/core/utilities.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class TotalScreen extends StatefulWidget {
   const TotalScreen({super.key});
@@ -198,33 +201,36 @@ class _TotalScreenState extends State<TotalScreen> {
             ),
             child: Column(
               children: [
-                _buildHeaderRow(),
-                ..._inputRows
-                    .asMap()
-                    .entries
-                    .map((entry) => _buildInputRow(entry.value, entry.key)),
+                const HeaderRow(),
+                ..._inputRows.asMap().entries.map((entry) => InputRow(
+                      controllers: entry.value,
+                      index: entry.key,
+                      convertedGrades: _convertedGrades,
+                      onRemove: () => _removeSpecificInputRow(entry.key),
+                      onValidate: _validateInputs,
+                    )),
                 SizedBox(height: size.height * 0.01),
-                _buildActionButtons(),
-                SizedBox(height: size.height * 0.04),
-                if (_isPercentageExceeded) ...[
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.error_outline,
-                        color: Colors.red,
-                        weight: 10,
-                      ),
-                      SizedBox(width: size.width * 0.02),
-                      const Text(
-                        "La suma de los porcentajes excede 100%",
-                        style: TextStyle(
-                          color: Colors.red,
+                Row(
+                  children: [
+                    if (_inputRows.length < 4)
+                      Container(
+                        margin: const EdgeInsets.only(left: 5),
+                        child: GestureDetector(
+                          onTap: _addInputRow,
+                          child: const Text(
+                            "+ Añadir Parcial",
+                            style: TextStyle(
+                              color: Colors.green,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
-                    ],
-                  ),
-                  SizedBox(height: size.height * 0.01),
-                ],
+                  ],
+                ),
+                SizedBox(height: size.height * 0.04),
+                if (_isPercentageExceeded) const PercentageExceededWarning(),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -241,212 +247,16 @@ class _TotalScreenState extends State<TotalScreen> {
                 ),
                 SizedBox(height: size.height * 0.02),
                 if (_gradesNeeded.isNotEmpty)
-                  Row(
-                    children: [
-                      SizedBox(
-                        width: size.width * 0.5,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  "¿Cuánto falta?",
-                                  style: TextStyle(
-                                    fontSize: size.width * 0.04,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            ..._gradesNeeded.asMap().entries.map(
-                              (entry) {
-                                final threshold = [2, 3, 4, 5, 6, 7, 8, 9]
-                                    .where(
-                                        (threshold) => threshold > _finalGrade!)
-                                    .toList()[entry.key];
-                                final value = entry.value.toInt();
-                                return Text(
-                                  "Para $threshold ${value == 0 ? "Fuera de la escala" : "necesitas $value"}",
-                                  style: TextStyle(
-                                    fontSize: size.width * 0.045,
-                                    color:
-                                        value == 0 ? Colors.red : Colors.black,
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(width: size.width * 0.04),
-                      Image.asset(
-                        "assets/image-removebg-preview.png",
-                        width: size.width * 0.38,
-                      )
-                    ],
+                  GradesNeededDisplay(
+                    gradesNeeded: _gradesNeeded,
+                    finalGrade: _finalGrade,
+                    size: size,
                   ),
               ],
             ),
           )
         ],
       ),
-    );
-  }
-
-  Widget _buildHeaderRow() {
-    return const Row(
-      children: [
-        Expanded(
-          flex: 2,
-          child: Text(
-            "Porcentaje",
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ),
-        SizedBox(width: 8),
-        Expanded(
-          flex: 2,
-          child: Text(
-            "Calificación",
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ),
-        SizedBox(width: 8),
-        Expanded(
-          flex: 1,
-          child: Text(
-            "1-9",
-            style: TextStyle(fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-          ),
-        ),
-        Expanded(
-          flex: 1,
-          child: SizedBox(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildInputRow(Map<String, dynamic> controllers, int index) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 2,
-            child: TextFormField(
-              controller: controllers["percentage"],
-              decoration: RoundedInputDecoration(
-                isError: controllers["percentageError"],
-              ).copyWith(
-                labelText: "% Parcial ${index + 1}",
-                contentPadding: const EdgeInsets.symmetric(
-                  vertical: 8,
-                  horizontal: 12,
-                ),
-              ),
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'^\d{1,4}$')),
-                TextInputFormatter.withFunction((oldValue, newValue) {
-                  final newText = newValue.text;
-                  if (int.tryParse(newText) != null &&
-                      int.parse(newText) > 100) {
-                    return oldValue.copyWith(
-                      text: oldValue.text,
-                      selection: TextSelection.collapsed(
-                        offset: oldValue.text.length,
-                      ),
-                    );
-                  }
-                  return newValue;
-                }),
-              ],
-              onChanged: (_) => _validateInputs(),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            flex: 2,
-            child: TextFormField(
-              controller: controllers["calification"],
-              decoration: RoundedInputDecoration(
-                isError: controllers["calificationError"],
-              ).copyWith(
-                labelText: "Parcial ${index + 1}",
-                contentPadding: const EdgeInsets.symmetric(
-                  vertical: 8,
-                  horizontal: 12,
-                ),
-              ),
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'^\d{1,4}$')),
-                TextInputFormatter.withFunction((oldValue, newValue) {
-                  final newText = newValue.text;
-                  if (int.tryParse(newText) != null &&
-                      int.parse(newText) > 100) {
-                    return oldValue.copyWith(
-                      text: oldValue.text,
-                      selection: TextSelection.collapsed(
-                        offset: oldValue.text.length,
-                      ),
-                    );
-                  }
-                  return newValue;
-                }),
-              ],
-              onChanged: (_) => _validateInputs(),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            flex: 1,
-            child: Text(
-              _convertedGrades.length > index
-                  ? _convertedGrades[index].toStringAsFixed(1)
-                  : "---",
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          IconButton(
-            icon: const Icon(
-              Icons.delete,
-              color: AppTheme.nearlyRed,
-            ),
-            onPressed: () => _removeSpecificInputRow(index),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionButtons() {
-    return Row(
-      children: [
-        if (_inputRows.length < 4)
-          Container(
-            margin: const EdgeInsets.only(left: 5),
-            child: GestureDetector(
-              onTap: _addInputRow,
-              child: const Text(
-                "+ Añadir Parcial",
-                style: TextStyle(
-                  color: Colors.green,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-      ],
     );
   }
 
@@ -475,7 +285,7 @@ class _TotalScreenState extends State<TotalScreen> {
   Widget _buildClearButton(Size size) {
     return SizedBox(
       width: size.width * 0.9,
-      child: OutlinedButton(
+      child: RoundedButtonOutline(
         onPressed: () {
           setState(() {
             for (var row in _inputRows) {
@@ -488,12 +298,6 @@ class _TotalScreenState extends State<TotalScreen> {
             _validateInputs();
           });
         },
-        style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: Colors.black),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
         child: const Padding(
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: Text(
