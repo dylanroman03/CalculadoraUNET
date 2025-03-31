@@ -43,6 +43,14 @@ class InputRow extends StatelessWidget {
                 FilteringTextInputFormatter.allow(RegExp(r'^\d{1,4}$')),
                 TextInputFormatter.withFunction((oldValue, newValue) {
                   final newText = newValue.text;
+                  if (newText.length > 1 && newText.startsWith('0')) {
+                    return newValue.copyWith(
+                      text: newText.substring(1),
+                      selection: TextSelection.collapsed(
+                        offset: newText.length - 1,
+                      ),
+                    );
+                  }
                   if (int.tryParse(newText) != null &&
                       int.parse(newText) > 100) {
                     return oldValue.copyWith(
@@ -77,6 +85,14 @@ class InputRow extends StatelessWidget {
                 FilteringTextInputFormatter.allow(RegExp(r'^\d{1,4}$')),
                 TextInputFormatter.withFunction((oldValue, newValue) {
                   final newText = newValue.text;
+                  if (newText.length > 1 && newText.startsWith('0')) {
+                    return newValue.copyWith(
+                      text: newText.substring(1),
+                      selection: TextSelection.collapsed(
+                        offset: newText.length - 1,
+                      ),
+                    );
+                  }
                   if (int.tryParse(newText) != null &&
                       int.parse(newText) > 100) {
                     return oldValue.copyWith(
