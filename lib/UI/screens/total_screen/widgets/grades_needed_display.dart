@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class GradesNeededDisplay extends StatelessWidget {
-  final List<double> gradesNeeded;
+  final List<Map<String, dynamic>> gradesNeeded;
   final double? finalGrade;
   final Size size;
 
@@ -32,17 +32,15 @@ class GradesNeededDisplay extends StatelessWidget {
                   ),
                 ],
               ),
-              ...gradesNeeded.asMap().entries.map(
+              ...gradesNeeded.map(
                 (entry) {
-                  final threshold = [2, 3, 4, 5, 6, 7, 8, 9]
-                      .where((threshold) => threshold > finalGrade!)
-                      .toList()[entry.key];
-                  final value = entry.value.toInt();
+                  final targetGrade = (entry["targetGrade"] + 0.5).toInt();
+                  final pointsNeeded = entry["pointsNeeded"].toInt();
                   return Text(
-                    "Para $threshold ${value == 0 ? "Fuera de la escala" : "necesitas $value"}",
+                    "Para $targetGrade ${pointsNeeded == 0 ? "Fuera de la escala" : "necesitas $pointsNeeded"}",
                     style: TextStyle(
                       fontSize: size.width * 0.045,
-                      color: value == 0 ? Colors.red : Colors.black,
+                      color: pointsNeeded == 0 ? Colors.red : Colors.black,
                     ),
                   );
                 },

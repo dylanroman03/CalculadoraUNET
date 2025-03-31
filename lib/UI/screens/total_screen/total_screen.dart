@@ -20,7 +20,7 @@ class _TotalScreenState extends State<TotalScreen> {
   bool _isCalculateButtonEnabled = false;
   bool _isPercentageExceeded = false;
   List<double> _convertedGrades = [];
-  List<double> _gradesNeeded = [];
+  List<Map<String, dynamic>> _gradesNeeded = [];
   double? _finalGrade;
 
   @override
@@ -118,18 +118,21 @@ class _TotalScreenState extends State<TotalScreen> {
 
     if (_finalGrade != null && !allInputsFilled && !percentagesSumTo100) {
       List<double> thresholds = [1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5];
-      List<int> gradesNeeded = thresholds
+      List<Map<String, dynamic>> gradesNeeded = thresholds
           .where((threshold) => threshold > _finalGrade!)
           .map((threshold) {
-        return howLeftTo(
-          _finalGrade!,
-          threshold,
-          100 - weights.reduce((a, b) => a + b),
-        );
+        return {
+          "targetGrade": threshold,
+          "pointsNeeded": howLeftTo(
+            _finalGrade!,
+            threshold,
+            100 - weights.reduce((a, b) => a + b),
+          ),
+        };
       }).toList();
 
       setState(() {
-        _gradesNeeded = gradesNeeded.map((e) => e.toDouble()).toList();
+        _gradesNeeded = gradesNeeded;
       });
     }
   }
