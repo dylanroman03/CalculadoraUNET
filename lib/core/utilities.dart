@@ -1,23 +1,23 @@
+const List<List<int>> filas = [
+  [0, 16],
+  [17, 27],
+  [28, 38],
+  [39, 50],
+  [51, 61],
+  [62, 72],
+  [73, 83],
+  [84, 94],
+  [95, 100]
+];
+
+const List<int> columnas = [7, 18, 29, 40, 51, 63, 74, 85, 95];
+
 double calculateGrade(double grade, double weight) {
   return grade * weight / 100;
 }
 
 double convertGrade(int valor) {
   if (valor == 0) return 0;
-
-  List<int> columnas = [7, 18, 29, 40, 51, 63, 74, 85, 95];
-
-  List<List<int>> filas = [
-    [0, 16],
-    [17, 27],
-    [28, 38],
-    [39, 50],
-    [51, 61],
-    [62, 72],
-    [73, 83],
-    [84, 94],
-    [95, 100]
-  ];
 
   int columna =
       filas.indexWhere((rango) => valor >= rango[0] && valor <= rango[1]);
@@ -37,20 +37,6 @@ double convertGrade(int valor) {
 
 int convertGradeInverse(double valor) {
   if (valor == 0) return 0;
-
-  List<int> columnas = [7, 18, 29, 40, 51, 63, 74, 85, 95];
-
-  List<List<int>> filas = [
-    [0, 16],
-    [17, 27],
-    [28, 38],
-    [39, 50],
-    [51, 61],
-    [62, 72],
-    [73, 83],
-    [84, 94],
-    [95, 100]
-  ];
 
   int baseIndex = valor.floor() - 1;
   if (baseIndex < 0) return 1;

@@ -46,6 +46,11 @@ class _TotalScreenState extends State<TotalScreen> {
   void _removeSpecificInputRow(int index) {
     setState(() {
       _inputRows.removeAt(index);
+
+      if (_inputRows.isEmpty) {
+        _clearView();
+      }
+
       _validateInputs();
     });
   }
@@ -56,19 +61,13 @@ class _TotalScreenState extends State<TotalScreen> {
     bool allPercentagesZero = true;
 
     for (var row in _inputRows) {
-      final percentageText = row["percentage"]?.text ?? "";
-      final calificationText = row["calification"]?.text ?? "";
+      final percentage = parseRowValue(row, "percentage");
+      final calification = parseRowValue(row, "calification");
 
-      final percentage = double.tryParse(percentageText) ?? -1;
-      final calification = double.tryParse(calificationText) ?? -1;
+      row["percentageError"] = !isValidRange(percentage);
+      row["calificationError"] = !isValidRange(calification);
 
-      final isPercentageValid = percentage >= 0 && percentage <= 100;
-      final isCalificationValid = calification >= 0 && calification <= 100;
-
-      row["percentageError"] = !isPercentageValid;
-      row["calificationError"] = !isCalificationValid;
-
-      if (!isPercentageValid || !isCalificationValid) {
+      if (row["percentageError"] || row["calificationError"]) {
         allValid = false;
       }
 
@@ -76,7 +75,7 @@ class _TotalScreenState extends State<TotalScreen> {
         allPercentagesZero = false;
       }
 
-      totalPercentage += isPercentageValid ? percentage : 0;
+      totalPercentage += !row["percentageError"] ? percentage : 0;
     }
 
     if (totalPercentage > 100) {
@@ -98,10 +97,10 @@ class _TotalScreenState extends State<TotalScreen> {
     _gradesNeeded = [];
 
     List<double> grades = _inputRows
-        .map((row) => double.tryParse(row["calification"]?.text ?? "0") ?? 0)
+        .map((row) => parseRowValue(row, "calification", def: 0))
         .toList();
     List<double> weights = _inputRows
-        .map((row) => double.tryParse(row["percentage"]?.text ?? "0") ?? 0)
+        .map((row) => parseRowValue(row, "percentage", def: 0))
         .toList();
 
     final result = calcularNotaFinal(grades, weights);
@@ -114,10 +113,13 @@ class _TotalScreenState extends State<TotalScreen> {
     bool allInputsFilled = _inputRows.length == 4 &&
         _inputRows.every((row) =>
             (double.tryParse(row["percentage"]?.text ?? "0") ?? 0) > 0);
-    bool percentagesSumTo100 = weights.reduce((a, b) => a + b) == 100;
+
+    final totalWeight = weights.reduce((a, b) => a + b);
+    bool percentagesSumTo100 = totalWeight == 100;
 
     if (_finalGrade != null && !allInputsFilled && !percentagesSumTo100) {
       List<double> thresholds = [1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5];
+
       List<Map<String, dynamic>> gradesNeeded = thresholds
           .where((threshold) => threshold > _finalGrade!)
           .map((threshold) {
@@ -126,7 +128,7 @@ class _TotalScreenState extends State<TotalScreen> {
           "pointsNeeded": howLeftTo(
             _finalGrade!,
             threshold,
-            100 - weights.reduce((a, b) => a + b),
+            100 - totalWeight,
           ),
         };
       }).toList();
@@ -152,14 +154,13 @@ class _TotalScreenState extends State<TotalScreen> {
 
     return Scaffold(
       body: Column(
-        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             color: AppTheme.nearlyBlue,
             padding: EdgeInsets.all(size.width * 0.04),
             child: Column(
               children: [
-                SizedBox(height: size.height * 0.05),
+                SizedBox(height: size.height * 0.04),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -197,67 +198,72 @@ class _TotalScreenState extends State<TotalScreen> {
               ],
             ),
           ),
-          Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: size.width * 0.04,
-              vertical: size.height * 0.02,
-            ),
-            child: Column(
-              children: [
-                const HeaderRow(),
-                ..._inputRows.asMap().entries.map((entry) => InputRow(
-                      controllers: entry.value,
-                      index: entry.key,
-                      convertedGrades: _convertedGrades,
-                      onRemove: () => _removeSpecificInputRow(entry.key),
-                      onValidate: _validateInputs,
-                    )),
-                SizedBox(height: size.height * 0.01),
-                Row(
+          Expanded(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: size.width * 0.04,
+                  vertical: size.height * 0.02,
+                ),
+                child: Column(
                   children: [
-                    if (_inputRows.length < 4)
-                      Container(
-                        margin: const EdgeInsets.only(left: 5),
-                        child: GestureDetector(
-                          onTap: _addInputRow,
-                          child: const Text(
-                            "+ Añadir Parcial",
-                            style: TextStyle(
-                              color: Colors.green,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                    const HeaderRow(),
+                    ..._inputRows.asMap().entries.map((entry) => InputRow(
+                          controllers: entry.value,
+                          index: entry.key,
+                          convertedGrades: _convertedGrades,
+                          onRemove: () => _removeSpecificInputRow(entry.key),
+                          onValidate: _validateInputs,
+                        )),
+                    SizedBox(height: size.height * 0.01),
+                    Row(
+                      children: [
+                        if (_inputRows.length < 4)
+                          Container(
+                            margin: const EdgeInsets.only(left: 5),
+                            child: GestureDetector(
+                              onTap: _addInputRow,
+                              child: const Text(
+                                "+ Añadir Parcial",
+                                style: TextStyle(
+                                  color: Colors.green,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                           ),
+                      ],
+                    ),
+                    SizedBox(height: size.height * 0.02),
+                    if (_isPercentageExceeded)
+                      const PercentageExceededWarning(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          flex: 1,
+                          child: _buildClearButton(size),
                         ),
+                        SizedBox(width: size.width * 0.02),
+                        Expanded(
+                          flex: 1,
+                          child: _buildCalculateButton(size),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: size.height * 0.02),
+                    if (_gradesNeeded.isNotEmpty)
+                      GradesNeededDisplay(
+                        gradesNeeded: _gradesNeeded,
+                        finalGrade: _finalGrade,
+                        size: size,
                       ),
                   ],
                 ),
-                SizedBox(height: size.height * 0.04),
-                if (_isPercentageExceeded) const PercentageExceededWarning(),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      flex: 1,
-                      child: _buildClearButton(size),
-                    ),
-                    SizedBox(width: size.width * 0.02),
-                    Expanded(
-                      flex: 1,
-                      child: _buildCalculateButton(size),
-                    ),
-                  ],
-                ),
-                SizedBox(height: size.height * 0.02),
-                if (_gradesNeeded.isNotEmpty)
-                  GradesNeededDisplay(
-                    gradesNeeded: _gradesNeeded,
-                    finalGrade: _finalGrade,
-                    size: size,
-                  ),
-              ],
+              ),
             ),
-          )
+          ),
         ],
       ),
     );
@@ -291,13 +297,7 @@ class _TotalScreenState extends State<TotalScreen> {
       child: RoundedButtonOutline(
         onPressed: () {
           setState(() {
-            for (var row in _inputRows) {
-              row["percentage"]?.text = "0";
-              row["calification"]?.text = "0";
-            }
-            _convertedGrades = [];
-            _gradesNeeded = [];
-            _finalGrade = null;
+            _clearView();
             _validateInputs();
           });
         },
@@ -311,4 +311,22 @@ class _TotalScreenState extends State<TotalScreen> {
       ),
     );
   }
+
+  void _clearView() {
+    for (var row in _inputRows) {
+      row["percentage"]?.text = "0";
+      row["calification"]?.text = "0";
+    }
+    _convertedGrades = [];
+    _gradesNeeded = [];
+    _finalGrade = null;
+  }
+
+  double parseRowValue(Map<String, dynamic> row, String key,
+      {double def = -1}) {
+    final text = row[key]?.text ?? "0";
+    return double.tryParse(text) ?? def;
+  }
+
+  bool isValidRange(double value) => value >= 0 && value <= 100;
 }

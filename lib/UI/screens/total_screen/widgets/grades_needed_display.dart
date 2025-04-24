@@ -18,34 +18,36 @@ class GradesNeededDisplay extends StatelessWidget {
       children: [
         SizedBox(
           width: size.width * 0.5,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    "¿Cuánto falta?",
-                    style: TextStyle(
-                      fontSize: size.width * 0.04,
-                      fontWeight: FontWeight.bold,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      "¿Cuánto falta?",
+                      style: TextStyle(
+                        fontSize: size.width * 0.04,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              ...gradesNeeded.map(
-                (entry) {
-                  final targetGrade = (entry["targetGrade"] + 0.5).toInt();
-                  final pointsNeeded = entry["pointsNeeded"].toInt();
-                  return Text(
-                    "Para $targetGrade ${pointsNeeded == 0 ? "Fuera de la escala" : "necesitas $pointsNeeded"}",
-                    style: TextStyle(
-                      fontSize: size.width * 0.045,
-                      color: pointsNeeded == 0 ? Colors.red : Colors.black,
-                    ),
-                  );
-                },
-              ),
-            ],
+                  ],
+                ),
+                ...gradesNeeded.map(
+                  (entry) {
+                    final targetGrade = (entry["targetGrade"] + 0.5).toInt();
+                    final pointsNeeded = entry["pointsNeeded"].toInt();
+                    return Text(
+                      "Para $targetGrade ${pointsNeeded == 0 ? "fuera de escala" : "necesitas $pointsNeeded"}",
+                      style: TextStyle(
+                        fontSize: size.width * 0.044,
+                        color: pointsNeeded == 0 ? Colors.red : Colors.black,
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         ),
         SizedBox(width: size.width * 0.04),

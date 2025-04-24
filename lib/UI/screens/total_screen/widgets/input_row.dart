@@ -52,7 +52,7 @@ class InputRow extends StatelessWidget {
                     );
                   }
                   if (int.tryParse(newText) != null &&
-                      int.parse(newText) > 100) {
+                      (int.parse(newText) > 100 || int.parse(newText) == 0)) {
                     return oldValue.copyWith(
                       text: oldValue.text,
                       selection: TextSelection.collapsed(
