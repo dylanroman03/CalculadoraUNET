@@ -75,15 +75,16 @@ class _TotalScreenState extends State<TotalScreen> {
         allPercentagesZero = false;
       }
 
-      totalPercentage += !row["percentageError"] ? percentage : 0;
+      if (!row["percentageError"]) {
+        totalPercentage += percentage;
+      }
     }
 
     if (totalPercentage > 100) {
       allValid = false;
-      _isPercentageExceeded = true;
-    } else {
-      _isPercentageExceeded = false;
     }
+
+    _isPercentageExceeded = totalPercentage > 100;
 
     setState(() {
       _isCalculateButtonEnabled = allValid && !allPercentagesZero;
@@ -111,8 +112,7 @@ class _TotalScreenState extends State<TotalScreen> {
     });
 
     bool allInputsFilled = _inputRows.length == 4 &&
-        _inputRows.every((row) =>
-            (double.tryParse(row["percentage"]?.text ?? "0") ?? 0) > 0);
+        _inputRows.every((row) => parseRowValue(row, "percentage", def: 0) > 0);
 
     final totalWeight = weights.reduce((a, b) => a + b);
     bool percentagesSumTo100 = totalWeight == 100;
@@ -138,6 +138,27 @@ class _TotalScreenState extends State<TotalScreen> {
       });
     }
   }
+
+  void _clearView() {
+    for (var row in _inputRows) {
+      row["percentage"]?.text = "0";
+      row["calification"]?.text = "0";
+    }
+    _convertedGrades = [];
+    _gradesNeeded = [];
+    _finalGrade = null;
+  }
+
+  double parseRowValue(
+    Map<String, dynamic> row,
+    String key, {
+    double def = -1,
+  }) {
+    final text = row[key]?.text ?? "0";
+    return double.tryParse(text) ?? def;
+  }
+
+  bool isValidRange(double value) => value >= 0 && value <= 100;
 
   @override
   void dispose() {
@@ -243,12 +264,59 @@ class _TotalScreenState extends State<TotalScreen> {
                       children: [
                         Expanded(
                           flex: 1,
-                          child: _buildClearButton(size),
+                          child: SizedBox(
+                            width: size.width * 0.9,
+                            child: RoundedButtonOutline(
+                              onPressed: () {
+                                setState(() {
+                                  _clearView();
+                                  _validateInputs();
+                                });
+                              },
+                              child: const Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 4,
+                                ),
+                                child: Text(
+                                  "Limpiar",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                         SizedBox(width: size.width * 0.02),
                         Expanded(
                           flex: 1,
-                          child: _buildCalculateButton(size),
+                          child: SizedBox(
+                            width: size.width * 0.9,
+                            child: RoundedButton(
+                              onPressed: _isCalculateButtonEnabled
+                                  ? _calculateFinalGrade
+                                  : null,
+                              backgroundColor: _isCalculateButtonEnabled
+                                  ? AppTheme.nearlyBlue
+                                  : Colors.grey,
+                              child: const Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 4,
+                                ),
+                                child: Text(
+                                  "Calcular",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -268,65 +336,4 @@ class _TotalScreenState extends State<TotalScreen> {
       ),
     );
   }
-
-  Widget _buildCalculateButton(Size size) {
-    return SizedBox(
-      width: size.width * 0.9,
-      child: RoundedButton(
-        onPressed: _isCalculateButtonEnabled ? _calculateFinalGrade : null,
-        backgroundColor:
-            _isCalculateButtonEnabled ? AppTheme.nearlyBlue : Colors.grey,
-        child: const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          child: Text(
-            "Calcular",
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildClearButton(Size size) {
-    return SizedBox(
-      width: size.width * 0.9,
-      child: RoundedButtonOutline(
-        onPressed: () {
-          setState(() {
-            _clearView();
-            _validateInputs();
-          });
-        },
-        child: const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          child: Text(
-            "Limpiar",
-            style: TextStyle(fontSize: 16, color: Colors.black),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _clearView() {
-    for (var row in _inputRows) {
-      row["percentage"]?.text = "0";
-      row["calification"]?.text = "0";
-    }
-    _convertedGrades = [];
-    _gradesNeeded = [];
-    _finalGrade = null;
-  }
-
-  double parseRowValue(Map<String, dynamic> row, String key,
-      {double def = -1}) {
-    final text = row[key]?.text ?? "0";
-    return double.tryParse(text) ?? def;
-  }
-
-  bool isValidRange(double value) => value >= 0 && value <= 100;
 }
