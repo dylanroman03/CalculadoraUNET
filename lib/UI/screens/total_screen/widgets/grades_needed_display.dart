@@ -22,30 +22,50 @@ class GradesNeededDisplay extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Text(
-                      "¿Cuánto falta?",
-                      style: TextStyle(
-                        fontSize: size.width * 0.04,
-                        fontWeight: FontWeight.bold,
+                if (gradesNeeded.isEmpty) ...[
+                  Row(
+                    children: [
+                      Text(
+                        "Haz finalizado el curso",
+                        style: TextStyle(
+                          fontSize: size.width * 0.04,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
+                    ],
+                  ),
+                  Text(
+                    "Tu nota final es ${finalGrade!.toStringAsFixed(2)}",
+                    style: TextStyle(
+                      fontSize: size.width * 0.044,
                     ),
-                  ],
-                ),
-                ...gradesNeeded.map(
-                  (entry) {
-                    final targetGrade = (entry["targetGrade"] + 0.5).toInt();
-                    final pointsNeeded = entry["pointsNeeded"].toInt();
-                    return Text(
-                      "Para $targetGrade ${pointsNeeded == 0 ? "fuera de escala" : "necesitas $pointsNeeded"}",
-                      style: TextStyle(
-                        fontSize: size.width * 0.044,
-                        color: pointsNeeded == 0 ? Colors.red : Colors.black,
+                  )
+                ] else ...[
+                  Row(
+                    children: [
+                      Text(
+                        "¿Cuánto falta?",
+                        style: TextStyle(
+                          fontSize: size.width * 0.04,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    );
-                  },
-                ),
+                    ],
+                  ),
+                  ...gradesNeeded.map(
+                    (entry) {
+                      final targetGrade = (entry["targetGrade"] + 0.5).toInt();
+                      final pointsNeeded = entry["pointsNeeded"].toInt();
+                      return Text(
+                        "Para $targetGrade ${pointsNeeded == 0 ? "fuera de escala" : "necesitas $pointsNeeded"}",
+                        style: TextStyle(
+                          fontSize: size.width * 0.044,
+                          color: pointsNeeded == 0 ? Colors.red : Colors.black,
+                        ),
+                      );
+                    },
+                  ),
+                ]
               ],
             ),
           ),

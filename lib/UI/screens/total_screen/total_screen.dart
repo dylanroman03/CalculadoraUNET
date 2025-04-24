@@ -321,7 +321,7 @@ class _TotalScreenState extends State<TotalScreen> {
                       ],
                     ),
                     SizedBox(height: size.height * 0.02),
-                    if (_gradesNeeded.isNotEmpty)
+                    if (_gradesNeeded.isNotEmpty || _finalGrade != null)
                       GradesNeededDisplay(
                         gradesNeeded: _gradesNeeded,
                         finalGrade: _finalGrade,
