@@ -44,7 +44,7 @@ class GradesNeededDisplay extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        "¿Cuánto falta?",
+                        "¿Cuánto Falta?",
                         style: TextStyle(
                           fontSize: size.width * 0.04,
                           fontWeight: FontWeight.bold,
@@ -56,12 +56,36 @@ class GradesNeededDisplay extends StatelessWidget {
                     (entry) {
                       final targetGrade = (entry["targetGrade"] + 0.5).toInt();
                       final pointsNeeded = entry["pointsNeeded"].toInt();
-                      return Text(
-                        "Para $targetGrade ${pointsNeeded == 0 ? "fuera de escala" : "necesitas $pointsNeeded"}",
-                        style: TextStyle(
-                          fontSize: size.width * 0.044,
-                          color: pointsNeeded == 0 ? Colors.red : Colors.black,
-                        ),
+                      return Row(
+                        children: [
+                          Text(
+                            "Para $targetGrade ",
+                            style: TextStyle(
+                              fontSize: size.width * 0.044,
+                              color:
+                                  pointsNeeded == 0 ? Colors.red : Colors.black,
+                            ),
+                          ),
+                          Text(
+                            pointsNeeded == 0
+                                ? "fuera de escala"
+                                : "necesitas ",
+                            style: TextStyle(
+                              fontSize: size.width * 0.044,
+                              color:
+                                  pointsNeeded == 0 ? Colors.red : Colors.black,
+                            ),
+                          ),
+                          if (pointsNeeded != 0)
+                            Text(
+                              pointsNeeded.toString(),
+                              style: TextStyle(
+                                fontSize: size.width * 0.044,
+                                fontWeight: FontWeight.bold,
+                                color: const Color.fromARGB(255, 255, 156, 43),
+                              ),
+                            ),
+                        ],
                       );
                     },
                   ),

@@ -28,7 +28,7 @@ class MainScreen extends StatelessWidget {
         ),
         PersistentBottomNavBarItem(
           icon: const Icon(Icons.sync),
-          title: "Nota",
+          title: "Conversión",
           activeColorPrimary: AppTheme.nearlyBlue,
           inactiveColorPrimary: Colors.grey,
         ),

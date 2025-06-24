@@ -7,7 +7,7 @@ class AppTheme {
   static const Color background = Color(0xFFF2F3F8);
   static const Color nearlyDarkBlue = Color(0xFF2633C5);
 
-  static const Color nearlyBlue = Color(0xFF123d86);
+  static const Color nearlyBlue = Color.fromARGB(255, 18, 54, 116);
   static const Color nearlyRed = Color.fromRGBO(239, 83, 80, 1);
   static const Color nearlyBlack = Color(0xFF213333);
   static const Color grey = Color(0xFF3A5160);
@@ -104,6 +104,11 @@ ThemeData get lightTheme {
     ),
     iconTheme: const IconThemeData(
       color: AppTheme.nearlyBlack,
+    ),
+    textSelectionTheme: TextSelectionThemeData(
+      selectionColor: primary.withOpacity(0.5),
+      cursorColor: primary,
+      selectionHandleColor: primary,
     ),
     // iconButtonTheme: IconButtonThemeData(
     //   style: ButtonStyle(

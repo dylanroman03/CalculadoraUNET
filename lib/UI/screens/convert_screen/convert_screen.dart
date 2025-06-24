@@ -49,12 +49,15 @@ class _ConvertScreenState extends State<ConvertScreen> {
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Column(
         mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
+            height: size.height * 0.12,
             color: AppTheme.nearlyBlue,
-            padding: EdgeInsets.all(size.width * 0.04),
+            padding: EdgeInsets.only(top: size.width * 0.025),
             child: Column(
               children: [
                 SizedBox(height: size.height * 0.05),

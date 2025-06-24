@@ -174,11 +174,14 @@ class _TotalScreenState extends State<TotalScreen> {
     Size size = MediaQuery.of(context).size;
 
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
+            height: size.height * 0.12,
             color: AppTheme.nearlyBlue,
-            padding: EdgeInsets.all(size.width * 0.04),
+            padding: EdgeInsets.only(top: size.width * 0.025),
             child: Column(
               children: [
                 SizedBox(height: size.height * 0.04),
@@ -186,7 +189,7 @@ class _TotalScreenState extends State<TotalScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text(
-                      "Nota Acumulada:",
+                      "Nota Definitiva:",
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -201,7 +204,7 @@ class _TotalScreenState extends State<TotalScreen> {
                       ),
                       padding: EdgeInsets.symmetric(
                         horizontal: size.width * 0.025,
-                        vertical: size.height * 0.005,
+                        vertical: size.height * 0.004,
                       ),
                       child: Text(
                         _finalGrade != null
@@ -209,8 +212,9 @@ class _TotalScreenState extends State<TotalScreen> {
                             : "  -  ",
                         style: const TextStyle(
                           fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.orange,
+                          fontWeight: FontWeight.w800,
+                          // color: Color.fromARGB(255, 255, 177, 31),
+                          color: Color.fromARGB(255, 255, 156, 43),
                         ),
                       ),
                     ),
