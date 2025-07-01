@@ -20,19 +20,21 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Calculadora UNET',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        textSelectionTheme: TextSelectionThemeData(
-          selectionColor: AppTheme.nearlyBlue.withOpacity(0.5),
-          cursorColor: AppTheme.nearlyBlue.withOpacity(0.5),
-          selectionHandleColor: AppTheme.nearlyBlue.withOpacity(0.8),
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          floatingLabelStyle: TextStyle(
-            color: AppTheme.nearlyBlue.withOpacity(0.8),
+          colorScheme: ColorScheme.fromSeed(seedColor: AppTheme.nearlyBlue),
+          textSelectionTheme: TextSelectionThemeData(
+            selectionColor: AppTheme.nearlyBlue.withOpacity(0.5),
+            cursorColor: AppTheme.nearlyBlue.withOpacity(0.5),
+            selectionHandleColor: AppTheme.nearlyBlue.withOpacity(0.8),
           ),
-        ),
-        useMaterial3: true,
-      ),
+          inputDecorationTheme: InputDecorationTheme(
+            floatingLabelStyle: TextStyle(
+              color: AppTheme.nearlyBlue.withOpacity(0.8),
+            ),
+          ),
+          useMaterial3: true,
+          primaryColor: AppTheme.nearlyBlue,
+          splashColor: AppTheme.nearlyBlue.withOpacity(0.5)
+          ),
       debugShowCheckedModeBanner: false,
       home: const MainScreen(),
     );

@@ -44,7 +44,7 @@ class GradesNeededDisplay extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        "¿Cuánto Falta?",
+                        "¿Cuánto falta?",
                         style: TextStyle(
                           fontSize: size.width * 0.04,
                           fontWeight: FontWeight.bold,
@@ -59,17 +59,7 @@ class GradesNeededDisplay extends StatelessWidget {
                       return Row(
                         children: [
                           Text(
-                            "Para $targetGrade ",
-                            style: TextStyle(
-                              fontSize: size.width * 0.044,
-                              color:
-                                  pointsNeeded == 0 ? Colors.red : Colors.black,
-                            ),
-                          ),
-                          Text(
-                            pointsNeeded == 0
-                                ? "fuera de escala"
-                                : "necesitas ",
+                            "Para $targetGrade ${pointsNeeded == 0 ? "fuera de escala" : "necesitas "}",
                             style: TextStyle(
                               fontSize: size.width * 0.044,
                               color:
@@ -82,7 +72,6 @@ class GradesNeededDisplay extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: size.width * 0.044,
                                 fontWeight: FontWeight.bold,
-                                color: const Color.fromARGB(255, 255, 156, 43),
                               ),
                             ),
                         ],
