@@ -1,15 +1,18 @@
 import 'package:calculadora_unet/UI/app_theme.dart';
 import 'package:calculadora_unet/UI/screens/main_screen/main_screen.dart';
-import 'package:device_preview/device_preview.dart';
+// import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
 
 void main() {
   runApp(
-    DevicePreview(
-      enabled: false,
-      builder: (context) => const MyApp(),
-    ),
+    const MyApp(),
   );
+  // runApp(
+  // DevicePreview(
+  // enabled: false,
+  //     builder: (context) => const MyApp(),
+  //   ),
+  // );
 }
 
 class MyApp extends StatelessWidget {
@@ -33,8 +36,7 @@ class MyApp extends StatelessWidget {
           ),
           useMaterial3: true,
           primaryColor: AppTheme.nearlyBlue,
-          splashColor: AppTheme.nearlyBlue.withOpacity(0.5)
-          ),
+          splashColor: AppTheme.nearlyBlue.withOpacity(0.5)),
       debugShowCheckedModeBanner: false,
       home: const MainScreen(),
     );
